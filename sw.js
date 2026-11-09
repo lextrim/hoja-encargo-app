@@ -1,8 +1,8 @@
 /* Service worker: la app abre y funciona sin internet.
-   - Página (HTML): primero la red (para tener siempre la última versión); si no hay red en 4 s, la copia guardada.
+   - Página (HTML): primero la red, saltándose la caché del navegador (siempre la última versión); si no hay red en 4 s, la copia guardada.
    - Resto de archivos propios (iconos, manifest): primero la copia guardada.
    - Google (Drive, inicio de sesión): no se toca; sin red falla y los cambios quedan «sin subir». */
-const VERSION = '20261109-085404';
+const VERSION = '20261109-085822';
 const CACHE = 'hoja-encargo-' + VERSION;
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'];
 
@@ -24,7 +24,9 @@ self.addEventListener('fetch', e => {
     e.respondWith((async () => {
       const cache = await caches.open(CACHE);
       try {
-        const res = await conTiempo(fetch(req), 4000);
+        // «no-cache»: preguntar siempre al servidor si hay versión nueva (GitHub Pages deja la página
+        // 10 min en la caché del navegador y, sin esto, una actualización tardaba ese tiempo en llegar)
+        const res = await conTiempo(fetch(req.url, {cache: 'no-cache', credentials: 'same-origin'}), 4000);
         if (res.ok) cache.put('index.html', res.clone());
         return res;
       } catch {
