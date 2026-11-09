@@ -2,7 +2,7 @@
    - Página (HTML): primero la red (para tener siempre la última versión); si no hay red en 4 s, la copia guardada.
    - Resto de archivos propios (iconos, manifest): primero la copia guardada.
    - Google (Drive, inicio de sesión): no se toca; sin red falla y los cambios quedan «sin subir». */
-const VERSION = '20261108-210942';
+const VERSION = '20261109-085404';
 const CACHE = 'hoja-encargo-' + VERSION;
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'];
 
