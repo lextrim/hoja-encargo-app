@@ -4,7 +4,7 @@
    - La nube y demás servidores: no se tocan; sin red fallan y los cambios quedan «sin subir».
    Cada copia publicada (la normal y la de prueba, en una subcarpeta) tiene su propia caché y solo atiende
    lo de su carpeta: así, en el mismo navegador, una no pisa ni borra lo guardado por la otra. */
-const VERSION = '20261110-082937';
+const VERSION = '20261110-083314';
 const AMBITO = new URL(self.registration.scope).pathname;     // p. ej. /hoja-encargo-app/  o  /hoja-encargo-app/prueba/
 const PREFIJO = 'hoja-encargo:' + AMBITO + ':';
 const CACHE = PREFIJO + VERSION;
@@ -21,8 +21,13 @@ self.addEventListener('activate', e => {
 });
 
 const conTiempo = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
-// solo lo de esta carpeta: una subcarpeta (p. ej. la versión de prueba) es otra app con su propio service worker
-const esMio = u => u.origin === self.location.origin && u.pathname.startsWith(AMBITO) && !u.pathname.slice(AMBITO.length).includes('/');
+// solo lo de esta carpeta: la página y sus archivos (con extensión). Una subcarpeta, se escriba con barra
+// final o sin ella («…/prueba» o «…/prueba/»), es otra app con su propio service worker y no se toca.
+const esMio = u => {
+  if (u.origin !== self.location.origin || !u.pathname.startsWith(AMBITO)) return false;
+  const resto = u.pathname.slice(AMBITO.length);
+  return resto === '' || (!resto.includes('/') && resto.includes('.'));
+};
 
 self.addEventListener('fetch', e => {
   const req = e.request, u = new URL(req.url);
@@ -34,6 +39,8 @@ self.addEventListener('fetch', e => {
         // «no-cache»: preguntar siempre al servidor si hay versión nueva (GitHub Pages deja la página
         // 10 min en la caché del navegador y, sin esto, una actualización tardaba ese tiempo en llegar)
         const res = await conTiempo(fetch(req.url, {cache: 'no-cache', credentials: 'same-origin'}), 4000);
+        // una redirección no se puede devolver tal cual a una navegación (el navegador da ERR_FAILED): se reenvía
+        if (res.redirected) return Response.redirect(res.url, 302);
         if (res.ok) cache.put(AMBITO, res.clone());
         return res;
       } catch {
