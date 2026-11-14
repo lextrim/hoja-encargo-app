@@ -4,7 +4,7 @@
    - La nube y demás servidores: no se tocan; sin red fallan y los cambios quedan «sin subir».
    Cada copia publicada (la normal y la de prueba, en una subcarpeta) tiene su propia caché y solo atiende
    lo de su carpeta: así, en el mismo navegador, una no pisa ni borra lo guardado por la otra. */
-const VERSION = '20261110-193835';
+const VERSION = '20261114-085605';
 const AMBITO = new URL(self.registration.scope).pathname;     // p. ej. /hoja-encargo-app/  o  /hoja-encargo-app/prueba/
 const PREFIJO = 'hoja-encargo:' + AMBITO + ':';
 const CACHE = PREFIJO + VERSION;
